@@ -66,12 +66,16 @@ class ReleaseTest(unittest.TestCase):
                      "Tools/dashboard/static/index.html", "Tools/dashboard/static/logo.svg"):
             self.assertIn(need, r)
         self.assertEqual(json.loads(r["Tools/youtube/channels.json"]), {})
+        self.assertIn(b"GNU GENERAL PUBLIC LICENSE", r["LICENSE"])
+        self.assertIn(b"Version 3", r["LICENSE"])
+        self.assertIn(b"GNU General Public License v3", r["README.md"])
         self.assertIn(b"google-auth-oauthlib", r["requirements.txt"])
         self.assertIn(b"\r\n", r["StudioPulse.cmd"])
 
     def test_repo_files_clean(self):
         files = br.repo_files()
         self.assertNotIn("Tools/youtube/channels.json", files)  # user data: created on first run, ignored by git
+        self.assertIn(b"GNU GENERAL PUBLIC LICENSE", files["LICENSE"])
         self.assertEqual(br.scan(sorted(files.items()), br.owner_markers(), need_channels=False), [])
         ignore = files[".gitignore"].decode()
         for need in ("Secrets/", "Data/", "Channels/", "Tools/youtube/channels.json", ".venv/", "client_secret*.json"):

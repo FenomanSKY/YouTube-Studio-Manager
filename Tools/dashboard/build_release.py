@@ -42,6 +42,18 @@ DEV_FILES = [
     "Tools/dashboard/test_accounts.py",
     "Tools/youtube/test_vault.py",
 ]
+# GPL-3.0 text, published at the package/repo root as LICENSE (GPL requires the license to travel with the code)
+LICENSE_SRC = "Tools/dashboard/LICENSE"
+
+
+def license_bytes():
+    """Source folder keeps it in Tools/dashboard; the GitHub project (and the zip) have it at the root."""
+    for rel in (LICENSE_SRC, "LICENSE"):
+        path = os.path.join(ROOT, *rel.split("/"))
+        if os.path.exists(path):
+            with open(path, "rb") as f:
+                return f.read()
+    raise SystemExit("LICENSE tidak ditemukan")
 REPO_DEFAULT = os.environ.get("STUDIOPULSE_REPO") or os.path.join(os.path.splitdrive(ROOT)[0] + os.sep, "Project Engineering", "StudioPulse")
 
 GITIGNORE = """\
@@ -99,6 +111,7 @@ if errorlevel 1 (
 echo ok> "%VENV%\.installed"
 
 :run
+echo StudioPulse (C) 2026 FenomanSKY - perangkat lunak bebas, lisensi GNU GPL v3, TANPA JAMINAN. Lihat file LICENSE.
 echo StudioPulse berjalan. Biarkan jendela ini terbuka; tutup jendela ini untuk menghentikan dasbor.
 "%PY%" -I "%~dp0Tools\dashboard\server.py" %*
 if errorlevel 1 pause
@@ -164,6 +177,15 @@ Tools/youtube/vault.py         penyimpanan token terenkripsi DPAPI
   Build otomatis gagal kalau ada file atau pola kredensial yang ikut.
 - `channels.json`, `Secrets\\`, `Data\\`, dan `Channels\\` adalah data pengguna dan sudah masuk `.gitignore`.
 - Port bisa diganti lewat variabel lingkungan `STUDIOPULSE_PORT`.
+
+## Lisensi
+
+Copyright (C) 2026 FenomanSKY.
+
+StudioPulse adalah perangkat lunak bebas di bawah **GNU General Public License v3** (atau versi yang lebih baru);
+teks lengkapnya ada di file `LICENSE`. Anda boleh memakai, mengubah, dan membagikan ulang kode ini, termasuk untuk
+keperluan komersial, asalkan versi yang Anda bagikan (asli atau hasil ubahan) juga dibuka kodenya dengan lisensi GPL
+yang sama dan tetap mencantumkan pembuat aslinya. Program ini diberikan apa adanya, TANPA JAMINAN apa pun.
 """
 
 # never allowed in the package, by path
@@ -253,6 +275,8 @@ def build(out_dir, name):
     for rel, text in generated.items():
         with open(os.path.join(pkg, *rel.split("/")), "w", encoding="utf-8", newline="") as f:
             f.write(text)
+    with open(os.path.join(pkg, "LICENSE"), "wb") as f:
+        f.write(license_bytes())
     zpath = os.path.join(out_dir, name + ".zip")
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
         for dirpath, _, files in os.walk(pkg):
@@ -271,6 +295,7 @@ def repo_files():
     for rel, text in {"requirements.txt": REQUIREMENTS, "StudioPulse.cmd": LAUNCHER.replace("\n", "\r\n"),
                       "README.md": README, ".gitignore": GITIGNORE}.items():
         out[rel] = text.encode("utf-8")
+    out["LICENSE"] = license_bytes()
     return out
 
 

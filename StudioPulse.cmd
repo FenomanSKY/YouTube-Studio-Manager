@@ -28,6 +28,7 @@ if errorlevel 1 (
 echo ok> "%VENV%\.installed"
 
 :run
+echo StudioPulse (C) 2026 FenomanSKY - perangkat lunak bebas, lisensi GNU GPL v3, TANPA JAMINAN. Lihat file LICENSE.
 echo StudioPulse berjalan. Biarkan jendela ini terbuka; tutup jendela ini untuk menghentikan dasbor.
 "%PY%" -I "%~dp0Tools\dashboard\server.py" %*
 if errorlevel 1 pause

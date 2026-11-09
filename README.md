@@ -57,3 +57,12 @@ Tools/youtube/vault.py         penyimpanan token terenkripsi DPAPI
   Build otomatis gagal kalau ada file atau pola kredensial yang ikut.
 - `channels.json`, `Secrets\`, `Data\`, dan `Channels\` adalah data pengguna dan sudah masuk `.gitignore`.
 - Port bisa diganti lewat variabel lingkungan `STUDIOPULSE_PORT`.
+
+## Lisensi
+
+Copyright (C) 2026 FenomanSKY.
+
+StudioPulse adalah perangkat lunak bebas di bawah **GNU General Public License v3** (atau versi yang lebih baru);
+teks lengkapnya ada di file `LICENSE`. Anda boleh memakai, mengubah, dan membagikan ulang kode ini, termasuk untuk
+keperluan komersial, asalkan versi yang Anda bagikan (asli atau hasil ubahan) juga dibuka kodenya dengan lisensi GPL
+yang sama dan tetap mencantumkan pembuat aslinya. Program ini diberikan apa adanya, TANPA JAMINAN apa pun.
