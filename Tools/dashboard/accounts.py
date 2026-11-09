@@ -1,4 +1,4 @@
-"""Channel accounts for StudioPulse: add, show credentials, store an API key, revoke, and remove.
+"""Channel accounts for YouTube Studio Manager: add, show credentials, store an API key, revoke, and remove.
 
 Every write goes through update_channels() so channels.json keeps its order and is replaced atomically.
 Secrets stay on this PC: OAuth client JSON in Secrets/, tokens and API keys in Secrets/vault (DPAPI). The dashboard shows
@@ -115,7 +115,7 @@ def mask(value, head=6, tail=4):
 # ---------- OAuth client JSON ----------
 def _client_path(name):
     if not name or not CLIENT_FILE_RE.match(name):
-        raise AccountError("nama file client secret tidak valid")
+        raise AccountError("invalid client secret file name")
     return os.path.join(SECRETS, name)
 
 
@@ -124,17 +124,17 @@ def parse_client_json(text):
     try:
         data = json.loads(text)
     except ValueError:
-        raise AccountError("file bukan JSON yang valid")
+        raise AccountError("the file is not valid JSON")
     if not isinstance(data, dict):
-        raise AccountError("isi JSON tidak dikenali")
+        raise AccountError("unrecognised JSON content")
     if data.get("type") == "service_account":
-        raise AccountError("ini Service Account JSON; YouTube butuh OAuth client (Desktop app) dari Google Cloud Console")
+        raise AccountError("this is a Service Account JSON; YouTube needs an OAuth client (Desktop app) from the Google Cloud Console")
     kind = "installed" if "installed" in data else "web" if "web" in data else None
     inner = data.get(kind) if kind else None
     if not inner or not inner.get("client_id") or not inner.get("client_secret"):
-        raise AccountError("bukan OAuth client JSON (butuh blok 'installed' berisi client_id dan client_secret)")
+        raise AccountError("not an OAuth client JSON (needs an 'installed' block with client_id and client_secret)")
     if not str(inner["client_id"]).endswith(".apps.googleusercontent.com"):
-        raise AccountError("client_id tidak berakhiran .apps.googleusercontent.com")
+        raise AccountError("client_id does not end in .apps.googleusercontent.com")
     return data, kind, inner
 
 
@@ -207,7 +207,7 @@ def get_api_key(ch):
 def set_api_key(ch, key):
     key = (key or "").strip()
     if not re.match(r"^AIza[0-9A-Za-z_-]{30,}$", key):
-        raise AccountError("format API key tidak dikenali (API key Google diawali 'AIza')")
+        raise AccountError("unrecognised API key format (Google API keys start with 'AIza')")
     vault.save(apikey_path(ch), {"api_key": key})
     audit(ch, "apikey_set", mask(key))
     return {"api_key": mask(key)}
@@ -225,10 +225,10 @@ def test_api_key(ch, cid):
     """One public channels.list call with the key (1 unit of the key's project). Never sends OAuth tokens."""
     key = get_api_key(ch)
     if not key:
-        raise AccountError("belum ada API key")
+        raise AccountError("no API key yet")
     q = urllib.parse.urlencode({"part": "id,snippet", "id": cid or "", "key": key, "maxResults": 1})
     req = urllib.request.Request("https://www.googleapis.com/youtube/v3/channels?" + q,
-                                 headers={"User-Agent": "StudioPulse/1.0"})
+                                 headers={"User-Agent": "YouTubeStudioManager/1.0"})
     try:
         with urllib.request.urlopen(req, timeout=15) as r:
             data = json.load(r)
@@ -237,11 +237,11 @@ def test_api_key(ch, cid):
             msg = json.load(e).get("error", {}).get("message", str(e))
         except ValueError:
             msg = str(e)
-        audit(ch, "apikey_test", f"gagal: {msg[:120]}")
+        audit(ch, "apikey_test", f"failed: {msg[:120]}")
         return {"ok": False, "message": msg[:300]}
     items = data.get("items", [])
     audit(ch, "apikey_test", "ok")
-    return {"ok": True, "message": f"API key aktif · {items[0]['snippet']['title']}" if items else "API key aktif"}
+    return {"ok": True, "message": f"API key works · {items[0]['snippet']['title']}" if items else "API key works"}
 
 
 # ---------- reveal (explicit click on the page) ----------
@@ -256,7 +256,7 @@ def reveal(ch, cfg, field):
         val = {"client_id": inner["client_id"], "client_secret": inner["client_secret"],
                "json": json.dumps(data, indent=2)}.get(field)
     if val is None:
-        raise AccountError("tidak ada nilai untuk ditampilkan")
+        raise AccountError("no value to show")
     audit(ch, "reveal_" + field)
     return {"field": field, "value": val}
 
@@ -288,12 +288,12 @@ def add_channel(title, client_file=None, client_json=None, language="id", slot_u
     """Register a channel (pending until its OAuth login succeeds). Returns the new key."""
     title = (title or "").strip()
     if not 2 <= len(title) <= 60:
-        raise AccountError("nama channel 2–60 karakter")
+        raise AccountError("channel name must be 2–60 characters")
     key = slug(title)
     if not KEY_RE.match(key):
-        raise AccountError("nama channel harus berisi huruf/angka")
+        raise AccountError("channel name must contain letters or digits")
     if language not in ("id", "en"):
-        raise AccountError("bahasa hanya id atau en")
+        raise AccountError("language must be en or id")
     try:
         slot = int(slot_utc_hour)
         assert 0 <= slot <= 23
@@ -302,12 +302,12 @@ def add_channel(title, client_file=None, client_json=None, language="id", slot_u
     if client_json:
         client_file = save_client_json(client_json)
     if client_file and not os.path.exists(_client_path(client_file)):  # None = set up later with the Google Cloud guide
-        raise AccountError("file OAuth client tidak ditemukan di Secrets")
+        raise AccountError("OAuth client file not found in Secrets")
     folder = folder_name(title)
 
     def edit(cfg):
         if key in cfg:
-            raise AccountError(f"channel dengan kunci '{key}' sudah ada")
+            raise AccountError(f"a channel with key '{key}' already exists")
         cfg[key] = {"title": title, "client_secret": client_file or None, "token": f"token_{key}.json",
                     "snapshots": f"Channels/{folder}/Data/snapshots", "projects": f"Channels/{folder}/Videos",
                     "slot_utc_hour": slot, "language": language, "category": str(category),
@@ -333,7 +333,7 @@ def revoke(ch, token_name):
     """Revoke the channel's OAuth grant at Google and archive the vault token. The channel stays listed."""
     path = vault.path_for(SECRETS, token_name)
     rec = vault.load(path)
-    result = "tidak ada token"
+    result = "no token"
     if rec:
         tok = rec["token"].get("refresh_token") or rec["token"].get("token")
         try:
@@ -341,9 +341,9 @@ def revoke(ch, token_name):
                                          data=urllib.parse.urlencode({"token": tok}).encode(),
                                          headers={"Content-Type": "application/x-www-form-urlencoded"})
             urllib.request.urlopen(req, timeout=15).close()
-            result = "dicabut di Google"
+            result = "revoked at Google"
         except urllib.error.HTTPError as e:  # 400 = already invalid; still drop it locally
-            result = f"Google menjawab {e.code} (token mungkin sudah tidak berlaku)"
+            result = f"Google answered {e.code} (the token may already be invalid)"
         _archive(ch, [path])
     plain = os.path.join(SECRETS, token_name)
     if os.path.exists(plain):
@@ -364,12 +364,12 @@ def _archive(ch, paths):
 
 
 def remove_channel(ch):
-    """Take a channel out of StudioPulse. Its token, API key and (if no other channel uses it) client JSON are
+    """Take a channel out of YouTube Studio Manager. Its token, API key and (if no other channel uses it) client JSON are
     archived to Secrets/_removed/, the channels.json entry to Data/dashboard/removed_channels.json. Video project
     folders under Channels/ are left untouched."""
     cfg = load_channels()
     if ch not in cfg:
-        raise AccountError(f"channel {ch} tidak ada")
+        raise AccountError(f"channel {ch} does not exist")
     entry = cfg[ch]
     files = [vault.path_for(SECRETS, entry["token"]), os.path.join(SECRETS, entry["token"]), apikey_path(ch)]
     if entry.get("client_secret") and client_users(entry["client_secret"], cfg) == [ch]:
@@ -435,10 +435,10 @@ def take_download(name):
     """Read a client JSON from Downloads by its exact listed name; returns (text, path). Validated, size-capped."""
     d = downloads_dir()
     if not name or not DOWNLOAD_RE.match(name) or name not in os.listdir(d):
-        raise AccountError("file tidak ada di folder Downloads")
+        raise AccountError("file not found in the Downloads folder")
     p = os.path.join(d, name)
     if os.path.getsize(p) > 64 * 1024:
-        raise AccountError("file terlalu besar untuk OAuth client JSON")
+        raise AccountError("file is too large for an OAuth client JSON")
     with open(p, encoding="utf-8") as f:
         text = f.read()
     parse_client_json(text)

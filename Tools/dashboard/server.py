@@ -1,6 +1,6 @@
-"""StudioPulse: local multi-channel dashboard for all channels in channels.json.
+"""YouTube Studio Manager: local multi-channel dashboard for all channels in channels.json.
 
-Run from the StudioPulse folder:  StudioPulse.cmd or dashboard.cmd  (or Tools\\youtube\\.venv\\Scripts\\python.exe Tools\\dashboard\\server.py)
+Run from the project folder:  YouTubeStudioManager.cmd or dashboard.cmd  (or Tools\\youtube\\.venv\\Scripts\\python.exe Tools\\dashboard\\server.py)
 Opens http://127.0.0.1:8765. Listens on localhost only.
 
 Reads through Tools/youtube/yt.py (one token per channel in Secrets/, never sent to the browser).
@@ -35,7 +35,7 @@ import launcher  # noqa: E402
 import accounts  # noqa: E402
 from googleapiclient.errors import HttpError  # noqa: E402
 
-PORT = int(os.environ.get("STUDIOPULSE_PORT") or 8765)
+PORT = int(os.environ.get("YSM_PORT") or os.environ.get("STUDIOPULSE_PORT") or 8765)
 CACHE_MIN = 15
 STATIC = os.path.join(HERE, "static")
 TOKEN = secrets.token_urlsafe(24)
@@ -90,7 +90,7 @@ def use(ch, need_token=True):
     yt.SNAPSHOTS = os.path.join(ROOT, c["snapshots"])
     yt.SLOT_UTC_HOUR = c.get("slot_utc_hour", 20)
     if need_token and not yt.has_token(c):
-        raise ApiError(f"Belum login untuk {c['title']}: klik Login Google di menu channel")
+        raise ApiError(f"{c['title']} is not signed in: click Sign in with Google in the channel menu")
 
 
 def call(ch, key, fn, fresh=False):
@@ -106,7 +106,7 @@ def call(ch, key, fn, fresh=False):
         except Exception as e:  # token expired/revoked shows up as RefreshError invalid_grant
             msg = str(e)
             if "invalid_grant" in msg or "RefreshError" in type(e).__name__:
-                raise ApiError(f"Token {yt.CH['title']} kedaluwarsa: klik Perpanjang login di menu channel")
+                raise ApiError(f"The {yt.CH['title']} token has expired: click Renew sign-in in the channel menu")
             raise
     cache[ck] = (time.time(), data)
     return data
@@ -239,7 +239,7 @@ def set_chrome_profile(ch, profile):
     if ch not in SHOWN:
         raise ApiError(f"unknown channel {ch}")
     if profile and profile not in {p["dir"] for p in launcher.profiles()}:
-        raise ApiError(f"Profil Chrome '{profile}' tidak ditemukan")
+        raise ApiError(f"Chrome profile '{profile}' not found")
     with config_lock:
         with open(CHANNELS_JSON, encoding="utf-8") as f:
             cfg = json.load(f)
@@ -281,15 +281,15 @@ def target_url(kind, cid, vid=None, lc=None):
         url = GCP[kind]
         if vid and kind != "gcp_project":
             if not PROJ_ID.match(vid):
-                raise ApiError("project id tidak valid")
+                raise ApiError("invalid project id")
             url += ("&" if "?" in url else "?") + "project=" + vid
         return url
     if kind == "public":
         if not cid:
-            raise ApiError("Channel ID belum diketahui; login API dulu")
+            raise ApiError("Channel ID not known yet; sign in to the API first")
         return f"https://www.youtube.com/channel/{cid}"
     if not vid or not YT_ID.match(vid):
-        raise ApiError("video id tidak valid")
+        raise ApiError("invalid video id")
     if kind == "edit":
         return f"https://studio.youtube.com/video/{vid}/edit"
     if kind == "analytics":
@@ -298,9 +298,9 @@ def target_url(kind, cid, vid=None, lc=None):
         return f"https://studio.youtube.com/video/{vid}/comments"
     if kind == "watch":
         if lc and not LC_ID.match(lc):
-            raise ApiError("comment id tidak valid")
+            raise ApiError("invalid comment id")
         return f"https://www.youtube.com/watch?v={vid}" + (f"&lc={lc}" if lc else "")
-    raise ApiError(f"jenis halaman tidak dikenal: {kind}")
+    raise ApiError(f"unknown page type: {kind}")
 
 
 def launch(ch, kind=None, vid=None, lc=None):
@@ -324,10 +324,10 @@ def open_folder(ch):
         raise ApiError(f"unknown channel {ch}")
     rel = yt.CHANNELS[ch].get("projects")
     if not rel:
-        raise ApiError("channel ini belum punya folder proyek di channels.json")
+        raise ApiError("this channel has no project folder in channels.json")
     path = os.path.normpath(os.path.join(ROOT, rel))
     if not path.startswith(os.path.join(ROOT, "Channels")):
-        raise ApiError("folder proyek di luar Channels\\")
+        raise ApiError("project folder is outside Channels\\")
     os.makedirs(path, exist_ok=True)
     os.startfile(path)
     return {"opened": os.path.relpath(path, ROOT)}
@@ -353,7 +353,7 @@ def start_auth(ch):
     if ch not in SHOWN:
         raise ApiError(f"unknown channel {ch}")
     if not yt.CHANNELS[ch].get("client_secret"):
-        raise ApiError("Channel ini belum punya file OAuth client (.json). Ikuti Panduan Google Cloud di Informasi akun.")
+        raise ApiError("This channel has no OAuth client file (.json) yet. Follow the Google Cloud guide in Account info.")
     job = auth_jobs.get(ch)
     if job and job["proc"].poll() is None:
         return auth_status(ch)
@@ -375,7 +375,7 @@ def _collect_auth(ch):
         out, err = job["proc"].communicate(timeout=AUTH_TIMEOUT_S)
     except subprocess.TimeoutExpired:
         job["proc"].kill()
-        job["result"] = {"state": "failed", "message": "waktu habis (5 menit) sebelum izin diberikan"}
+        job["result"] = {"state": "failed", "message": "timed out (5 minutes) before permission was granted"}
         return
     if job.get("cancelled"):  # cancel_auth() already set the result
         return
@@ -396,14 +396,14 @@ def _collect_auth(ch):
         except (ValueError, TypeError):
             msg = None
     if job["proc"].returncode == 0 and msg and msg.get("ok"):
-        job["result"] = {"state": "ok", "message": f"Login diperbarui untuk {msg.get('channel')}"}
+        job["result"] = {"state": "ok", "message": f"Sign-in renewed for {msg.get('channel')}"}
         if yt.CHANNELS.get(ch, {}).get("pending") or (msg.get("id") and not load_channel_ids().get(ch)):
             accounts.finish_pending(ch, msg.get("id"))  # new channel: connected now, remember its UC id
             reload_channels()
-            job["result"]["message"] = f"Channel {msg.get('channel')} terhubung"
+            job["result"]["message"] = f"Channel {msg.get('channel')} connected"
         accounts.audit(ch, "oauth_login", msg.get("channel") or "")
     else:
-        last = (msg or {}).get("error") or ((err or "").strip().splitlines() or ["gagal"])[-1]
+        last = (msg or {}).get("error") or ((err or "").strip().splitlines() or ["failed"])[-1]
         job["result"] = {"state": "failed", "message": str(last)[:300]}
     health_cache.pop(ch, None)
 
@@ -415,7 +415,7 @@ def cancel_auth(ch):
     job = auth_jobs.get(ch)
     if job and job["proc"].poll() is None:
         job["cancelled"] = True
-        job["result"] = {"state": "cancelled", "message": "Login dibatalkan"}
+        job["result"] = {"state": "cancelled", "message": "Sign-in cancelled"}
         job["proc"].kill()
         accounts.audit(ch, "oauth_cancelled")
     return auth_status(ch)
@@ -428,7 +428,7 @@ def auth_status(ch=None):
             return {"state": "idle"}
         if job["result"]:
             return dict(job["result"], started=job["started"])
-        return {"state": "running", "started": job["started"], "message": "Menunggu Anda klik Izinkan di jendela Chrome channel"}
+        return {"state": "running", "started": job["started"], "message": "Waiting for you to click Allow in the channel's Chrome window"}
     return one(ch) if ch else {c: one(c) for c in SHOWN}
 
 
@@ -458,7 +458,7 @@ def account_info(ch):
 def add_account(b):
     try:
         key = accounts.add_channel(b.get("title"), b.get("client_file") or None, b.get("client_json") or None,
-                                   b.get("language") or "id", b.get("slot_utc_hour", 12))
+                                   b.get("language") or "en", b.get("slot_utc_hour", 12))
     except accounts.AccountError as e:
         raise ApiError(str(e))
     reload_channels()
@@ -503,7 +503,7 @@ def revoke_account(ch):
     try:
         res = accounts.revoke(ch, c["token"])
     except Exception as e:
-        raise ApiError(f"gagal mencabut: {e}")
+        raise ApiError(f"revoke failed: {e}")
     health_cache.pop(ch, None)
     cache_drop(ch)
     return res
@@ -512,10 +512,10 @@ def revoke_account(ch):
 def remove_account(ch, confirm, forget_chrome=False):
     c = _acct(ch)
     if (confirm or "").strip() != c["title"]:
-        raise ApiError("ketik nama channel persis untuk konfirmasi")
+        raise ApiError("type the channel name exactly to confirm")
     job = auth_jobs.get(ch)
     if job and job["proc"].poll() is None:
-        raise ApiError("login API channel ini masih berjalan; tunggu selesai dulu")
+        raise ApiError("an API sign-in for this channel is still running; wait for it to finish")
     try:
         res = accounts.remove_channel(ch)
     except accounts.AccountError as e:
@@ -559,7 +559,7 @@ def _api_state(fn):
         text = str(e) + (e.content.decode("utf-8", "replace") if getattr(e, "content", None) else "")
         off = any(s in text for s in ("accessNotConfigured", "SERVICE_DISABLED", "has not been used in project", "is disabled"))
         msg = re.sub(r"<[^>]+>", "", getattr(e, "reason", "") or str(e))[:200]
-        return {"ok": False, "disabled": off, "message": "API belum diaktifkan di project ini" if off else msg}
+        return {"ok": False, "disabled": off, "message": "API not enabled in this project" if off else msg}
 
 
 def check_apis(ch):
@@ -669,7 +669,7 @@ class Handler(BaseHTTPRequestHandler):
         u = urlparse(self.path)
         size = int(self.headers.get("Content-Length") or 0)
         if size > 256 * 1024:
-            return self.send(413, {"error": "terlalu besar"})
+            return self.send(413, {"error": "too large"})
         body = json.loads(self.rfile.read(size) or b"{}")
         try:
             if u.path == "/api/reply":
@@ -696,7 +696,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send(200, add_account(body))
             if u.path == "/api/account/reveal":
                 if body.get("field") not in ("client_id", "client_secret", "api_key"):
-                    return self.send(400, {"error": "field tidak dikenal"})
+                    return self.send(400, {"error": "unknown field"})
                 return self.send(200, _acct_call(accounts.reveal, ch, _acct(ch), body["field"]))
             if u.path == "/api/account/download":
                 return self.send(200, download_client(ch, body.get("mode")))
@@ -740,13 +740,13 @@ def already_running():
 def main():
     url = f"http://127.0.0.1:{PORT}/"
     if already_running():
-        print(f"StudioPulse sudah berjalan di {url} (port {PORT} terpakai). Membuka browser saja; "
-              "untuk restart, tutup jendela StudioPulse yang lama dulu.")
+        print(f"YouTube Studio Manager is already running at {url} (port {PORT} in use). Opening the browser only; "
+              "to restart, close the old YouTube Studio Manager window first.")
         if "--no-browser" not in sys.argv:
             webbrowser.open(url)
         return
     srv = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
-    print(f"StudioPulse running at {url}  (Ctrl+C to stop)")
+    print(f"YouTube Studio Manager running at {url}  (Ctrl+C to stop)")
     if "--no-browser" not in sys.argv:
         threading.Timer(0.8, lambda: webbrowser.open(url)).start()
     try:

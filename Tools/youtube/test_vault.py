@@ -1,4 +1,4 @@
-"""python -I Tools/youtube/test_vault.py   (from the StudioPulse folder, with the Tools/youtube/.venv python)"""
+"""python -I Tools/youtube/test_vault.py   (from the project folder, with the Tools/youtube/.venv python)"""
 import os
 import sys
 import tempfile

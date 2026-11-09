@@ -24,7 +24,7 @@ class ReleaseTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.tmp = tempfile.mkdtemp()
-        cls.pkg, cls.zip = br.build(cls.tmp, "StudioPulse-test")
+        cls.pkg, cls.zip = br.build(cls.tmp, "YouTubeStudioManager-test")
         with zipfile.ZipFile(cls.zip) as z:
             cls.entries = {n: z.read(n) for n in z.namelist() if not n.endswith("/")}
 
@@ -37,7 +37,7 @@ class ReleaseTest(unittest.TestCase):
 
     def test_scan_clean(self):
         markers = br.owner_markers()
-        self.assertTrue(markers or not os.path.exists(os.path.join(br.ROOT, "Secrets")), "penanda data pemilik kosong")
+        self.assertTrue(markers or not os.path.exists(os.path.join(br.ROOT, "Secrets")), "owner markers are empty")
         self.assertEqual(br.scan_zip(self.zip, markers), [])
 
     def test_no_file_from_secrets(self):
@@ -49,7 +49,7 @@ class ReleaseTest(unittest.TestCase):
                     hashes.add(sha(f.read()))
         for rel, data in self.rels().items():
             self.assertNotIn(os.path.basename(rel).lower(), names - {"channels.json"}, rel)
-            self.assertNotIn(sha(data), hashes, f"{rel} sama persis dengan file di Secrets")
+            self.assertNotIn(sha(data), hashes, f"{rel} is identical to a file in Secrets")
 
     def test_no_owner_folders_or_logs(self):
         for rel in self.rels():
@@ -61,7 +61,7 @@ class ReleaseTest(unittest.TestCase):
 
     def test_expected_files(self):
         r = self.rels()
-        for need in ("StudioPulse.cmd", "README.md", "requirements.txt", "Tools/youtube/channels.json",
+        for need in ("YouTubeStudioManager.cmd", "README.md", "requirements.txt", "Tools/youtube/channels.json",
                      "Tools/youtube/yt.py", "Tools/youtube/vault.py", "Tools/dashboard/server.py",
                      "Tools/dashboard/static/index.html", "Tools/dashboard/static/logo.svg"):
             self.assertIn(need, r)
@@ -70,7 +70,7 @@ class ReleaseTest(unittest.TestCase):
         self.assertIn(b"Version 3", r["LICENSE"])
         self.assertIn(b"GNU General Public License v3", r["README.md"])
         self.assertIn(b"google-auth-oauthlib", r["requirements.txt"])
-        self.assertIn(b"\r\n", r["StudioPulse.cmd"])
+        self.assertIn(b"\r\n", r["YouTubeStudioManager.cmd"])
 
     def test_repo_files_clean(self):
         files = br.repo_files()
@@ -91,7 +91,7 @@ class ReleaseTest(unittest.TestCase):
         for frag in ("Secrets/client.json", "Data/dashboard/channel_ids.json", "Tools/x.json", "Tools/t.json",
                      "credential_audit", "Tools/a.js"):
             self.assertTrue(any(frag in p for p in problems), frag)
-        self.assertFalse(any("x" * 24 in p for p in problems), "pesan tidak boleh memuat nilai rahasia")
+        self.assertFalse(any("x" * 24 in p for p in problems), "messages must not contain the secret value")
         self.assertTrue(br.scan([("Tools/youtube/channels.json", b'{"a": {}}')]))
 
 

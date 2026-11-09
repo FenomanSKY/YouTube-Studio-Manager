@@ -1,4 +1,4 @@
-/* StudioPulse — tokens from the Stitch design "Multi-Channel Studio Pulse", checked against ui-ux-pro-max (contrast 4.5:1, focus, 44px touch) */
+/* YouTube Studio Manager — tokens from the Stitch design "Multi-Channel Studio Pulse", checked against ui-ux-pro-max (contrast 4.5:1, focus, 44px touch) */
 :root {
   --bg: #0F0F10; --surface: #18181B; --raised: #27272A; --line: #27272A; --line2: #3F3F46; --hover: #1F1F23;
   --red: #FF0033; --red2: #E60026; --soft-red: #ff5357; --green: #10B981; --cyan: #06B6D4; --blue: #3B82F6; --amber: #F59E0B;
@@ -26,7 +26,7 @@ html :is(a, button, select, input, textarea, [tabindex]):focus-visible { outline
 .rail { width: 264px; flex: none; background: var(--surface); border-right: 1px solid var(--line); padding: 18px 12px;
   display: flex; flex-direction: column; gap: 14px; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 20; }
 .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; padding: 0 6px; }
-.brand b { font-weight: 700; letter-spacing: -.02em; } .brand i { font-style: normal; color: var(--soft-red); }
+.brand b { font-weight: 700; letter-spacing: -.02em; font-size: 16px; line-height: 1.15; } .brand i { font-style: normal; color: var(--soft-red); }
 .brand .dot { margin-left: auto; }
 .logo { width: 34px; height: 34px; flex: none; display: block; }
 .wlogo { width: 72px; height: 72px; display: block; margin-bottom: 14px; }

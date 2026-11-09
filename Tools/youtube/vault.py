@@ -14,7 +14,7 @@ import json
 import os
 
 MAGIC = b"SPV1"
-ENTROPY = b"StudioPulse-vault-v1"
+ENTROPY = b"StudioPulse-vault-v1"  # old project name; never change it or existing vault files can no longer be decrypted
 CRYPTPROTECT_UI_FORBIDDEN = 0x1
 
 

@@ -3,7 +3,7 @@
 Pick a channel with --ch KEY before the command (default: env YT_CHANNEL, else the first channel), e.g.
   Tools\\youtube\\yt.cmd --ch mychannel channel
 
-Usage (from the StudioPulse folder):
+Usage (from the YouTube Studio Manager folder):
   Tools\\youtube\\yt.cmd auth [--force]             browser login (--force = fresh login, resets 7-day expiry)
   Tools\\youtube\\yt.cmd channel                    channel info + totals
   Tools\\youtube\\yt.cmd videos [--limit N]         recent uploads with public stats
@@ -118,7 +118,7 @@ def creds(force=False):
         c.refresh(Request())
     else:
         if not CH.get("client_secret"):
-            sys.exit(json.dumps({"ok": False, "error": "channel ini belum punya file OAuth client (.json); ikuti Panduan Google Cloud di dasbor"}))
+            sys.exit(json.dumps({"ok": False, "error": "this channel has no OAuth client file (.json) yet; follow the Google Cloud guide in the dashboard"}))
         secret = os.path.join(SECRETS, CH["client_secret"])
         if not os.path.exists(secret):
             sys.exit(f"Missing {CH['client_secret']} in {SECRETS}")
@@ -129,7 +129,7 @@ def creds(force=False):
 
 
 CHANNEL_IDS = os.path.join(ROOT, "Data", "dashboard", "channel_ids.json")
-USE_CHROME_SESSION = True  # auth opens Google in the channel's own StudioPulse Chrome session when one exists
+USE_CHROME_SESSION = True  # auth opens Google in the channel's own YouTube Studio Manager Chrome session when one exists
 
 
 def ch_key():
@@ -137,7 +137,7 @@ def ch_key():
 
 
 def _login(secret):
-    """Browser OAuth login. When the dashboard has a Chrome session for this channel (Buka Studio), the consent page
+    """Browser OAuth login. When the dashboard has a Chrome session for this channel (Open Studio), the consent page
     opens there, already signed in to the channel's Google account, so the user only clicks Allow."""
     flow = InstalledAppFlow.from_client_secrets_file(secret, SCOPES)
     key, browser, hint = ch_key(), None, {}
@@ -174,7 +174,7 @@ def auth(force=False):
         c = creds()
     else:
         if not CH.get("client_secret"):
-            sys.exit(json.dumps({"ok": False, "error": "channel ini belum punya file OAuth client (.json); ikuti Panduan Google Cloud di dasbor"}))
+            sys.exit(json.dumps({"ok": False, "error": "this channel has no OAuth client file (.json) yet; follow the Google Cloud guide in the dashboard"}))
         secret = os.path.join(SECRETS, CH["client_secret"])
         if not os.path.exists(secret):
             sys.exit(f"Missing {CH['client_secret']} in {SECRETS}")
@@ -186,16 +186,16 @@ def auth(force=False):
         api = build("youtube", "v3", credentials=c, cache_discovery=False)
         items = api.channels().list(part="snippet", mine=True).execute().get("items", [])
         got = items[0]["id"] if items else None
-        name = items[0]["snippet"]["title"] if items else "akun tanpa channel"
+        name = items[0]["snippet"]["title"] if items else "account without a channel"
         if not got:
-            sys.exit(json.dumps({"ok": False, "error": "akun Google yang dipilih tidak punya channel YouTube; token TIDAK disimpan"}))
+            sys.exit(json.dumps({"ok": False, "error": "the selected Google account has no YouTube channel; the token was NOT saved"}))
         if expected and got != expected:
-            sys.exit(json.dumps({"ok": False, "error": f"akun Google yang dipilih memegang '{name}', bukan {CH['title']}; "
-                                                      "token TIDAK disimpan"}, ensure_ascii=False))
+            sys.exit(json.dumps({"ok": False, "error": f"the selected Google account owns '{name}', not {CH['title']}; "
+                                                      "the token was NOT saved"}, ensure_ascii=False))
         taken = _channel_taken(got)
         if taken:
-            sys.exit(json.dumps({"ok": False, "error": f"channel '{name}' sudah terdaftar sebagai {CHANNELS[taken]['title']}; "
-                                                      "token TIDAK disimpan"}, ensure_ascii=False))
+            sys.exit(json.dumps({"ok": False, "error": f"channel '{name}' is already registered as {CHANNELS[taken]['title']}; "
+                                                      "the token was NOT saved"}, ensure_ascii=False))
         _keep(c, rec, vault.now())
         return {"ok": True, "channel": name, "id": got}
     return {"ok": True, "channel": channel()["title"]}
@@ -225,7 +225,7 @@ def token_status():
     except vault.VaultError as e:
         return dict(base, state="error", store="vault", detail=str(e))
     if not c:
-        return dict(base, state="missing", store=None, detail="belum login")
+        return dict(base, state="missing", store=None, detail="not signed in")
     base.update(store="vault" if rec else "plain", login_at=(rec or {}).get("login_at"),
                 migrated_from=(rec or {}).get("migrated_from"))
     try:
@@ -233,7 +233,7 @@ def token_status():
     except RefreshError as e:
         bad = "invalid_grant" in str(e)
         return dict(base, state="expired" if bad else "error",
-                    detail="refresh token ditolak Google, perlu login ulang" if bad else str(e)[:200])
+                    detail="Google rejected the refresh token; sign in again" if bad else str(e)[:200])
     except TransportError as e:
         return dict(base, state="offline", detail=str(e)[:200])
     if rec:  # keep the fresh access token; a plain-file token is only migrated by vault-migrate
@@ -241,7 +241,7 @@ def token_status():
     res = dict(base, state="ok", expires_at=None, days_left=None)
     if mode == "testing":
         if not res["login_at"]:
-            res.update(state="unknown_age", detail="umur login tidak diketahui (token lama); login ulang untuk mulai menghitung")
+            res.update(state="unknown_age", detail="login age unknown (old token); sign in again to start tracking it")
         else:
             exp = dt.datetime.fromisoformat(res["login_at"]) + dt.timedelta(days=REFRESH_DAYS_TESTING)
             left = (exp - dt.datetime.now(dt.timezone.utc)).total_seconds() / 86400
@@ -254,14 +254,14 @@ def token_status():
 def vault_migrate():
     """Copy the plain token file into the vault after a successful refresh. The plain file is left in place."""
     if os.path.exists(vault_path()):
-        return {"migrated": False, "reason": "vault sudah ada"}
+        return {"migrated": False, "reason": "vault already exists"}
     if not os.path.exists(TOKEN):
-        return {"migrated": False, "reason": "tidak ada file token polos"}
+        return {"migrated": False, "reason": "no plain token file"}
     c = Credentials.from_authorized_user_file(TOKEN, SCOPES)
     try:
         c.refresh(Request())
     except RefreshError as e:
-        return {"migrated": False, "reason": "token lama sudah tidak berlaku: " + str(e)[:120]}
+        return {"migrated": False, "reason": "the old token is no longer valid: " + str(e)[:120]}
     vault.save(vault_path(), json.loads(c.to_json()), migrated_from=CH["token"])
     ok = vault.load(vault_path())["token"].get("refresh_token") == c.refresh_token
     return {"migrated": ok, "vault": os.path.relpath(vault_path(), ROOT)}
@@ -270,10 +270,10 @@ def vault_migrate():
 def vault_remove_plain():
     """Move the plain token file to the Recycle Bin, only when the vault copy decrypts and refreshes."""
     if not os.path.exists(TOKEN):
-        return {"removed": False, "reason": "tidak ada file token polos"}
+        return {"removed": False, "reason": "no plain token file"}
     rec = vault.load(vault_path())
     if not rec:
-        return {"removed": False, "reason": "belum ada di vault; jalankan vault-migrate dulu"}
+        return {"removed": False, "reason": "not in the vault yet; run vault-migrate first"}
     c = Credentials.from_authorized_user_info(rec["token"], SCOPES)
     c.refresh(Request())
     import subprocess
@@ -598,12 +598,12 @@ def main():
     global CH, TOKEN, SNAPSHOTS, SLOT_UTC_HOUR, USE_CHROME_SESSION
     p = argparse.ArgumentParser(description="YouTube tool for the channels in channels.json")
     if not CHANNELS:
-        sys.exit("channels.json masih kosong: tambah channel dulu lewat dasbor StudioPulse (Tambah Channel)")
+        sys.exit("channels.json is empty: add a channel in the YouTube Studio Manager dashboard first (Add Channel)")
     env_ch = os.environ.get("YT_CHANNEL")
     p.add_argument("--ch", default=env_ch if env_ch in CHANNELS else next(iter(CHANNELS)), choices=sorted(CHANNELS))
     sub = p.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("auth"); s.add_argument("--force", action="store_true", help="always open the browser for a fresh login")
-    s.add_argument("--default-browser", action="store_true", help="do not use the channel's StudioPulse Chrome session")
+    s.add_argument("--default-browser", action="store_true", help="do not use the channel's YouTube Studio Manager Chrome session")
     sub.add_parser("channel")
     s = sub.add_parser("videos"); s.add_argument("--limit", type=int, default=50)
     s = sub.add_parser("analytics"); s.add_argument("--days", type=int, default=28)

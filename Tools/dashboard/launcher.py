@@ -2,7 +2,7 @@
 
 Two ways, per channel in channels.json:
 - default: a Chrome session that belongs to this channel only, a separate Chrome user data folder at
-  %LOCALAPPDATA%\\StudioPulse\\chrome\\<channel>. The first "Buka Studio" lands on Google's sign-in page; the user signs
+  %LOCALAPPDATA%\\YouTubeStudioManager\\chrome\\<channel> (older installs: ...\\StudioPulse\\chrome). The first "Open Studio" lands on Google's sign-in page; the user signs
   in by hand, and Chrome itself keeps that session (encrypted by Chrome), so later clicks open Studio already signed in.
 - "chrome_profile": an existing profile of the user's normal Chrome (folder name such as "Profile 2").
 
@@ -21,7 +21,8 @@ CHROME_CANDIDATES = [
     os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe"),
 ]
 USER_DATA = os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\User Data")
-SESSION_ROOT = os.path.expandvars(r"%LOCALAPPDATA%\StudioPulse\chrome")
+_OLD_ROOT = os.path.expandvars(r"%LOCALAPPDATA%\StudioPulse\chrome")  # name before the rename; keeps existing sign-ins
+SESSION_ROOT = _OLD_ROOT if os.path.isdir(_OLD_ROOT) else os.path.expandvars(r"%LOCALAPPDATA%\YouTubeStudioManager\chrome")
 
 
 class LaunchError(Exception):
@@ -32,7 +33,7 @@ def chrome_exe():
     for p in CHROME_CANDIDATES:
         if os.path.isfile(p):
             return p
-    raise LaunchError("Chrome tidak ditemukan di Program Files atau LocalAppData")
+    raise LaunchError("Chrome not found in Program Files or LocalAppData")
 
 
 def profiles():
@@ -57,7 +58,7 @@ def _start(args):
 # ---------- per-channel session (own user data folder) ----------
 def _safe(ch):
     if not ch or not all(c.isalnum() or c in "-_" for c in ch):
-        raise LaunchError(f"nama channel tidak valid: {ch!r}")
+        raise LaunchError(f"invalid channel name: {ch!r}")
     return ch
 
 
@@ -124,11 +125,11 @@ def forget_session(ch):
     """Delete the channel's Chrome session folder (signs that browser out). Chrome for it must be closed."""
     d = session_dir(ch)
     if not os.path.isdir(d):
-        return {"forgotten": False, "reason": "belum ada sesi"}
+        return {"forgotten": False, "reason": "no session yet"}
     try:
         os.rename(d, d + ".del")  # fails while that Chrome window still holds the folder
     except OSError:
-        raise LaunchError("Tutup dulu jendela Chrome milik channel ini, lalu coba lagi")
+        raise LaunchError("Close this channel's Chrome window first, then try again")
     shutil.rmtree(d + ".del", ignore_errors=True)
     try:
         os.remove(_meta_path(ch))
@@ -162,7 +163,7 @@ def register_session_browser(ch):
 # ---------- an existing profile of the normal Chrome ----------
 def open_profile(profile_dir, channel_id=None, url=None):
     if profile_dir not in {p["dir"] for p in profiles()}:
-        raise LaunchError(f"Profil Chrome '{profile_dir}' tidak ada lagi; pilih ulang")
+        raise LaunchError(f"Chrome profile '{profile_dir}' no longer exists; pick another one")
     url = url or studio_url(channel_id)
     _start([f"--profile-directory={profile_dir}", url])
     return {"opened": url, "mode": "profile", "profile": profile_dir}

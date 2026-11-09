@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>StudioPulse</title>
+<title>YouTube Studio Manager</title>
 <link rel="icon" type="image/svg+xml" href="logo.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,38 +12,38 @@
 <script>window.API_TOKEN = "__TOKEN__";</script>
 </head>
 <body>
-<aside class="rail" id="rail" aria-label="Navigasi utama">
-  <div class="brand"><img class="logo" src="logo.svg" alt="" aria-hidden="true"><b>Studio<i>Pulse</i></b><span class="dot ok" id="liveDot" role="img" aria-label="Status sinkronisasi"></span></div>
-  <div class="switcher" id="switcher" role="group" aria-label="Pilih channel"></div>
+<aside class="rail" id="rail" aria-label="Main navigation">
+  <div class="brand"><img class="logo" src="logo.svg" alt="" aria-hidden="true"><b>YouTube Studio <i>Manager</i></b><span class="dot ok" id="liveDot" role="img" aria-label="Sync status"></span></div>
+  <div class="switcher" id="switcher" role="group" aria-label="Choose a channel"></div>
   <nav>
     <div class="navhead">Intelligence</div>
-    <a href="#overview" data-page="overview"><span class="ms" aria-hidden="true">space_dashboard</span>Ringkasan</a>
-    <a href="#compare" data-page="compare"><span class="ms" aria-hidden="true">compare_arrows</span>Komparasi Channel</a>
-    <a href="#content" data-page="content"><span class="ms" aria-hidden="true">video_library</span>Performa Konten</a>
+    <a href="#overview" data-page="overview"><span class="ms" aria-hidden="true">space_dashboard</span>Overview</a>
+    <a href="#compare" data-page="compare"><span class="ms" aria-hidden="true">compare_arrows</span>Channel Comparison</a>
+    <a href="#content" data-page="content"><span class="ms" aria-hidden="true">video_library</span>Content Performance</a>
     <div class="navhead">Studio</div>
-    <a href="#schedule" data-page="schedule"><span class="ms" aria-hidden="true">calendar_month</span>Kalender &amp; Antrean</a>
-    <a href="#comments" data-page="comments"><span class="ms" aria-hidden="true">forum</span>Komentar</a>
-    <a href="#quota" data-page="quota"><span class="ms" aria-hidden="true">bolt</span>Kuota API</a>
+    <a href="#schedule" data-page="schedule"><span class="ms" aria-hidden="true">calendar_month</span>Calendar &amp; Queue</a>
+    <a href="#comments" data-page="comments"><span class="ms" aria-hidden="true">forum</span>Comments</a>
+    <a href="#quota" data-page="quota"><span class="ms" aria-hidden="true">bolt</span>API Quota</a>
     <div class="navhead">Manager</div>
-    <a href="#manager" data-page="manager"><span class="ms" aria-hidden="true">manage_accounts</span>Channel &amp; Login</a>
-    <div class="navhead">Bantuan</div>
-    <a href="#help" data-page="help"><span class="ms" aria-hidden="true">help</span>Panduan</a>
+    <a href="#manager" data-page="manager"><span class="ms" aria-hidden="true">manage_accounts</span>Channels &amp; Sign-in</a>
+    <div class="navhead">Help</div>
+    <a href="#help" data-page="help"><span class="ms" aria-hidden="true">help</span>Guide</a>
   </nav>
-  <button class="quota-mini" id="quotaMini" data-page="quota" aria-label="Buka halaman Kuota API"></button>
+  <button class="quota-mini" id="quotaMini" data-page="quota" aria-label="Open the API Quota page"></button>
 </aside>
 <main>
   <header class="top">
-    <button class="icon-btn menu" id="menuBtn" aria-label="Buka menu" aria-controls="rail" aria-expanded="false"><span class="ms" aria-hidden="true">menu</span></button>
-    <span class="chip"><span class="ms" aria-hidden="true">calendar_today</span>28 hari terakhir</span>
-    <span class="chip live" id="syncChip" role="status" aria-live="polite"><span class="dot ok" id="syncDot"></span><span id="syncText">Memuat…</span></span>
+    <button class="icon-btn menu" id="menuBtn" aria-label="Open menu" aria-controls="rail" aria-expanded="false"><span class="ms" aria-hidden="true">menu</span></button>
+    <span class="chip"><span class="ms" aria-hidden="true">calendar_today</span>Last 28 days</span>
+    <span class="chip live" id="syncChip" role="status" aria-live="polite"><span class="dot ok" id="syncDot"></span><span id="syncText">Loading…</span></span>
     <span class="grow"></span>
-    <button class="btn secondary" id="syncBtn" aria-label="Sinkronkan ulang data dari YouTube"><span class="ms" aria-hidden="true" id="syncIcon">sync</span>Sync</button>
+    <button class="btn secondary" id="syncBtn" aria-label="Sync data from YouTube again"><span class="ms" aria-hidden="true" id="syncIcon">sync</span>Sync</button>
   </header>
   <div id="errors"></div>
   <section id="view" aria-live="polite"></section>
 </main>
 <div class="drawer-bg" id="drawerBg"></div>
-<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Detail video"></aside>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Video details"></aside>
 <dialog class="dlg" id="addDlg" aria-labelledby="addDlgTitle"></dialog>
 <script src="app.js"></script>
 </body>
