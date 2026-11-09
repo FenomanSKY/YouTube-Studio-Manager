@@ -7,9 +7,9 @@ Only the files listed in FILES are copied (an allowlist, never a folder walk), s
 channel_ids.json, the credential audit log and the owner's channels.json can never slip in. channels.json is written
 fresh as {}. After building, scan() checks the result for secret-looking content and fails the build on any hit.
 
---repo [DIR] syncs the standalone GitHub project instead (default D:\\Project Engineering\\StudioPulse): the same files
+--repo [DIR] syncs the standalone GitHub project instead (default: env STUDIOPULSE_REPO, else <drive>\\Project Engineering\\StudioPulse): the same files
 plus tests, this script, .gitignore and README; channels.json is left out (created on first run, ignored by git).
-Only files this script manages are written there; anything else in DIR is left alone. Project AI stays the source.
+Only files this script manages are written there; anything else in DIR is left alone. The source folder stays the master copy.
 """
 import argparse
 import datetime as dt
@@ -42,7 +42,7 @@ DEV_FILES = [
     "Tools/dashboard/test_accounts.py",
     "Tools/youtube/test_vault.py",
 ]
-REPO_DEFAULT = r"D:\Project Engineering\StudioPulse"
+REPO_DEFAULT = os.environ.get("STUDIOPULSE_REPO") or os.path.join(os.path.splitdrive(ROOT)[0] + os.sep, "Project Engineering", "StudioPulse")
 
 GITIGNORE = """\
 # user data and credentials: never commit
