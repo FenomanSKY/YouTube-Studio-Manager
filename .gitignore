@@ -1,0 +1,15 @@
+# user data and credentials: never commit
+Secrets/
+Data/
+Channels/
+Tools/youtube/channels.json
+*.dpapi
+client_secret*.json
+token_*.json
+# local environment and build output
+.venv/
+__pycache__/
+*.pyc
+dist/
+*.zip
+*.tmp

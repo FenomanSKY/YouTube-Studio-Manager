@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StudioPulse</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,400,0,0&display=block" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>window.API_TOKEN = "__TOKEN__";</script>
+</head>
+<body>
+<aside class="rail" id="rail" aria-label="Navigasi utama">
+  <div class="brand"><img class="logo" src="logo.svg" alt="" aria-hidden="true"><b>Studio<i>Pulse</i></b><span class="dot ok" id="liveDot" role="img" aria-label="Status sinkronisasi"></span></div>
+  <div class="switcher" id="switcher" role="group" aria-label="Pilih channel"></div>
+  <nav>
+    <div class="navhead">Intelligence</div>
+    <a href="#overview" data-page="overview"><span class="ms" aria-hidden="true">space_dashboard</span>Ringkasan</a>
+    <a href="#compare" data-page="compare"><span class="ms" aria-hidden="true">compare_arrows</span>Komparasi Channel</a>
+    <a href="#content" data-page="content"><span class="ms" aria-hidden="true">video_library</span>Performa Konten</a>
+    <div class="navhead">Studio</div>
+    <a href="#schedule" data-page="schedule"><span class="ms" aria-hidden="true">calendar_month</span>Kalender &amp; Antrean</a>
+    <a href="#comments" data-page="comments"><span class="ms" aria-hidden="true">forum</span>Komentar</a>
+    <a href="#quota" data-page="quota"><span class="ms" aria-hidden="true">bolt</span>Kuota API</a>
+    <div class="navhead">Manager</div>
+    <a href="#manager" data-page="manager"><span class="ms" aria-hidden="true">manage_accounts</span>Channel &amp; Login</a>
+    <div class="navhead">Bantuan</div>
+    <a href="#help" data-page="help"><span class="ms" aria-hidden="true">help</span>Panduan</a>
+  </nav>
+  <button class="quota-mini" id="quotaMini" data-page="quota" aria-label="Buka halaman Kuota API"></button>
+</aside>
+<main>
+  <header class="top">
+    <button class="icon-btn menu" id="menuBtn" aria-label="Buka menu" aria-controls="rail" aria-expanded="false"><span class="ms" aria-hidden="true">menu</span></button>
+    <span class="chip"><span class="ms" aria-hidden="true">calendar_today</span>28 hari terakhir</span>
+    <span class="chip live" id="syncChip" role="status" aria-live="polite"><span class="dot ok" id="syncDot"></span><span id="syncText">Memuat…</span></span>
+    <span class="grow"></span>
+    <button class="btn secondary" id="syncBtn" aria-label="Sinkronkan ulang data dari YouTube"><span class="ms" aria-hidden="true" id="syncIcon">sync</span>Sync</button>
+  </header>
+  <div id="errors"></div>
+  <section id="view" aria-live="polite"></section>
+</main>
+<div class="drawer-bg" id="drawerBg"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Detail video"></aside>
+<dialog class="dlg" id="addDlg" aria-labelledby="addDlgTitle"></dialog>
+<script src="app.js"></script>
+</body>
+</html>

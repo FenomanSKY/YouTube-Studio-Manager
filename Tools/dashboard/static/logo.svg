@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="StudioPulse">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#18181c"/><stop offset="1" stop-color="#0b0b0d"/>
+    </linearGradient>
+    <linearGradient id="play" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff3b5c"/><stop offset="1" stop-color="#e0002a"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="22" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soft" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="48" y="48" width="928" height="928" rx="210" fill="url(#bg)" stroke="#2a2a30" stroke-width="6"/>
+  <circle cx="512" cy="512" r="390" fill="none" stroke="#3a0d16" stroke-width="3"/>
+  <circle cx="512" cy="512" r="320" fill="none" stroke="#33333a" stroke-width="5" stroke-dasharray="14 18"/>
+  <g stroke-width="5" stroke-dasharray="8 10">
+    <line x1="512" y1="214" x2="512" y2="322" stroke="#1f6b4c"/>
+    <line x1="512" y1="702" x2="512" y2="810" stroke="#1f6b4c"/>
+    <line x1="214" y1="512" x2="282" y2="512" stroke="#1d4f6b"/>
+    <line x1="742" y1="512" x2="810" y2="512" stroke="#6b1d2c"/>
+  </g>
+  <g filter="url(#soft)">
+    <circle cx="512" cy="192" r="20" fill="none" stroke="#2fe39a" stroke-width="9"/><circle cx="512" cy="192" r="9" fill="#2fe39a"/>
+    <circle cx="512" cy="832" r="18" fill="none" stroke="#24c886" stroke-width="8"/><circle cx="512" cy="832" r="9" fill="#24c886"/>
+    <circle cx="192" cy="512" r="17" fill="none" stroke="#29a8ec" stroke-width="7"/><circle cx="192" cy="512" r="8" fill="#29a8ec"/>
+    <circle cx="832" cy="512" r="17" fill="none" stroke="#ff2448" stroke-width="7"/><circle cx="832" cy="512" r="7" fill="#ff2448"/>
+  </g>
+  <rect x="280" y="320" width="464" height="384" rx="96" fill="#1e1e22" stroke="#2c2c32" stroke-width="4"/>
+  <path d="M452 400 Q452 380 472 390 L608 470 Q628 482 608 494 L472 576 Q452 588 452 566 Z" fill="url(#play)" filter="url(#glow)"/>
+  <g stroke-linecap="round" stroke-width="12">
+    <line x1="350" y1="482" x2="350" y2="544" stroke="#7a1022"/>
+    <line x1="378" y1="448" x2="378" y2="576" stroke="#a3132c"/>
+    <line x1="406" y1="416" x2="406" y2="606" stroke="#c0102f"/>
+  </g>
+  <polyline points="332,527 388,527 428,464 468,552 504,503 536,503" fill="none" stroke="#f3f3f5" stroke-width="13"
+            stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="624" y="420" width="24" height="24" rx="4" fill="#2fe39a" filter="url(#soft)"/>
+</svg>
