@@ -42,7 +42,7 @@ DEV_FILES = [
     "Tools/dashboard/test_accounts.py",
     "Tools/youtube/test_vault.py",
 ]
-# GPL-3.0 text, published at the package/repo root as LICENSE (GPL requires the license to travel with the code)
+# MIT license text, published at the package/repo root as LICENSE (MIT requires the notice to travel with the code)
 LICENSE_SRC = "Tools/dashboard/LICENSE"
 
 
@@ -115,7 +115,7 @@ if errorlevel 1 (
 echo ok> "%VENV%\.installed"
 
 :run
-echo YouTube Studio Manager (C) 2026 FenomanSKY - free software under the GNU GPL v3, WITHOUT ANY WARRANTY. See LICENSE.
+echo YouTube Studio Manager (C) 2026 FenomanSKY - MIT License, WITHOUT ANY WARRANTY. See LICENSE.
 echo YouTube Studio Manager is running. Keep this window open; close it to stop the dashboard.
 "%PY%" -I "%~dp0Tools\dashboard\server.py" %*
 if errorlevel 1 pause
@@ -204,10 +204,9 @@ sponsored by Google LLC or YouTube. YouTube is a trademark of Google LLC.
 
 Copyright (C) 2026 FenomanSKY.
 
-YouTube Studio Manager is free software under the **GNU General Public License v3** (or any later version);
-the full text is in `LICENSE`. You may use, modify and redistribute it, including commercially, as long as
-any version you distribute (original or modified) is also released as source under the same GPL license and
-keeps the original author's credit. It comes as is, WITHOUT ANY WARRANTY.
+YouTube Studio Manager is released under the **MIT License**; the full text is in `LICENSE`. You may use, copy,
+modify, merge, publish, distribute, sublicense and sell it, including in closed-source projects, as long as the
+copyright notice and the license text are kept. It comes as is, WITHOUT ANY WARRANTY.
 """
 
 # never allowed in the package, by path

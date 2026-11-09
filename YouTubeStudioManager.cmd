@@ -28,7 +28,7 @@ if errorlevel 1 (
 echo ok> "%VENV%\.installed"
 
 :run
-echo YouTube Studio Manager (C) 2026 FenomanSKY - free software under the GNU GPL v3, WITHOUT ANY WARRANTY. See LICENSE.
+echo YouTube Studio Manager (C) 2026 FenomanSKY - MIT License, WITHOUT ANY WARRANTY. See LICENSE.
 echo YouTube Studio Manager is running. Keep this window open; close it to stop the dashboard.
 "%PY%" -I "%~dp0Tools\dashboard\server.py" %*
 if errorlevel 1 pause
