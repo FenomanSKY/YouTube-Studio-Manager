@@ -80,6 +80,7 @@ sponsored by Google LLC or YouTube. YouTube is a trademark of Google LLC.
 
 Copyright (C) 2026 FenomanSKY.
 
-YouTube Studio Manager is released under the **MIT License**; the full text is in `LICENSE`. You may use, copy,
-modify, merge, publish, distribute, sublicense and sell it, including in closed-source projects, as long as the
-copyright notice and the license text are kept. It comes as is, WITHOUT ANY WARRANTY.
+YouTube Studio Manager is released under the **MIT License with the Commons Clause**; the full text is in `LICENSE`. You may use, copy,
+modify, merge, publish and distribute it, as long as the copyright notice and the license text are kept, but you may not **sell** it
+(including offering a paid product or service whose value derives substantially from it). This is a source-available license, not an
+OSI-approved open-source license. It comes as is, WITHOUT ANY WARRANTY.

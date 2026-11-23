@@ -31,6 +31,13 @@ FILES = [
     "Tools/dashboard/static/app.js",
     "Tools/dashboard/static/style.css",
     "Tools/dashboard/static/logo.svg",
+    # [Diubah oleh Gemini - 2026-11-21] Sertakan font lokal Inter + Material Symbols Outlined beserta lisensi resmi
+    "Tools/dashboard/static/fonts/inter-latin.woff2",
+    "Tools/dashboard/static/fonts/inter-latin-ext.woff2",
+    "Tools/dashboard/static/fonts/material-symbols-outlined.woff2",
+    "Tools/dashboard/static/fonts/OFL-1.1-Inter.txt",
+    "Tools/dashboard/static/fonts/Apache-2.0-MaterialSymbols.txt",
+    "Tools/dashboard/static/fonts/SOURCES.txt",
     "Tools/youtube/yt.py",
     "Tools/youtube/vault.py",
     "Tools/youtube/yt.cmd",
@@ -42,7 +49,7 @@ DEV_FILES = [
     "Tools/dashboard/test_accounts.py",
     "Tools/youtube/test_vault.py",
 ]
-# MIT license text, published at the package/repo root as LICENSE (MIT requires the notice to travel with the code)
+# MIT + Commons Clause license text, published at the package/repo root as LICENSE (the notice must travel with the code)
 LICENSE_SRC = "Tools/dashboard/LICENSE"
 
 
@@ -115,7 +122,7 @@ if errorlevel 1 (
 echo ok> "%VENV%\.installed"
 
 :run
-echo YouTube Studio Manager (C) 2026 FenomanSKY - MIT License, WITHOUT ANY WARRANTY. See LICENSE.
+echo YouTube Studio Manager (C) 2026 FenomanSKY - MIT License + Commons Clause (no selling), WITHOUT ANY WARRANTY. See LICENSE.
 echo YouTube Studio Manager is running. Keep this window open; close it to stop the dashboard.
 "%PY%" -I "%~dp0Tools\dashboard\server.py" %*
 if errorlevel 1 pause
@@ -204,9 +211,10 @@ sponsored by Google LLC or YouTube. YouTube is a trademark of Google LLC.
 
 Copyright (C) 2026 FenomanSKY.
 
-YouTube Studio Manager is released under the **MIT License**; the full text is in `LICENSE`. You may use, copy,
-modify, merge, publish, distribute, sublicense and sell it, including in closed-source projects, as long as the
-copyright notice and the license text are kept. It comes as is, WITHOUT ANY WARRANTY.
+YouTube Studio Manager is released under the **MIT License with the Commons Clause**; the full text is in `LICENSE`. You may use, copy,
+modify, merge, publish and distribute it, as long as the copyright notice and the license text are kept, but you may not **sell** it
+(including offering a paid product or service whose value derives substantially from it). This is a source-available license, not an
+OSI-approved open-source license. It comes as is, WITHOUT ANY WARRANTY.
 """
 
 # never allowed in the package, by path
